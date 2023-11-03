@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+#Henry add the PID control
+from utils.pid import PIDControl
 
 def KL_divergence_gaussians_standard_prior(mu, logvar):
     # calculates kl divergence between normal gaussian and the learned encoder gaussian
@@ -366,6 +368,7 @@ class CVAELoss(nn.Module):
 
         else:
             kld_weight = self.kld_weight
+            
 
         print("ln422 kld_weight")
         print(kld_weight)
@@ -386,6 +389,8 @@ class CVAELoss(nn.Module):
         )
         extra_log_dict['posterior_kld_loss_unreduced'] = posterior_kld_loss_unreduced.mean().squeeze()
 
+        
+
         if "target_capacity" in self.kl_type:
             import pdb
             pdb.set_trace()
@@ -396,8 +401,17 @@ class CVAELoss(nn.Module):
             kld_loss = torch.abs(kld_loss - cc)
             extra_log_dict['current_capacity'] = cc
 
-        total_loss = reconstruction + kld_weight * \
-                     torch.clamp(posterior_kld_loss_unreduced, self.kld_lower, self.kld_upper).mean().to(reconstruction.device)
+        #Henry use PID to change the total loss
+        print(posterior_kld_loss_unreduced)
+        print(posterior_kld_loss_unreduced.item())
+        kl_loss = torch.clamp(posterior_kld_loss_unreduced, self.kld_lower, self.kld_upper).mean().to(reconstruction.device)
+        print(kl_loss)
+        kld_weight = PIDControl.pid(20, kl_loss.item(), Kp=0.01, Ki=(-0.0001), Kd=0.0)
+        total_loss = reconstruction + kld_weight* kl_loss
+        #Henry end
+
+        # total_loss = reconstruction + kld_weight * \
+        #              torch.clamp(posterior_kld_loss_unreduced, self.kld_lower, self.kld_upper).mean().to(reconstruction.device)
 
         if "encoder_trans" in self.recon_loss_type:
             # encourage encoder trans to be orthogonal

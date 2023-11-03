@@ -32,6 +32,7 @@ def get_relative_rotation_from_binary_logits(rotated_pointcloud,
 
     # surface_points = rotated_pointcloud[torch.sigmoid(binary_logits) < sigmoid_threshold]
 
+    #Henry 找到 predict[0][0]中的topk_k个最小值的索引
     surface_points = rotated_pointcloud[torch.topk(binary_logits, topk_k, largest=False)[-1]]
 
     surface_pcd = open3d.geometry.PointCloud()
@@ -45,7 +46,13 @@ def get_relative_rotation_from_binary_logits(rotated_pointcloud,
         # calculate the neighboring distance based on the PCA length along the pointcloud
 
         # plane_model, plane_idxs = surface_pcd.segment_plane(.01, np.min([15, surface_points.shape[0]]), 100000)
-        plane_model, plane_idxs = surface_pcd.segment_plane(.002, np.min([min_num_points, surface_points.shape[0]]), 100000)
+        '''
+        距离点云中的点的距离小于或等于0.002个单位（即距离阈值）。
+        平面包含的点数大于等于 min_num_points 和点云中的点数中的较小值。
+        RANSAC算法最多进行100000次迭代。
+        '''
+        #Henry 有改參數
+        plane_model, plane_idxs = surface_pcd.segment_plane(.0005, np.min([min_num_points, surface_points.shape[0]]), 100000)
 
         plane_normal = np.array(plane_model)[:3]
         a, b, c, d = plane_model

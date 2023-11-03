@@ -5,7 +5,7 @@ import sys
 setup(
     name='bandu',
     py_modules=['bandu'],
-    version=__version__,#'0.1',
+    # version=__version__,#'0.1',
     install_requires=[
     ],
     description="",

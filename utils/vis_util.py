@@ -120,7 +120,7 @@ def create_arrow(vec, color, vis=None, vec_len=None, scale=.06, radius=.12, posi
     mesh_arrow.paint_uniform_color(color)
     return mesh_arrow
 
-
+#Henry 產生map
 def make_color_map(pred):
     # assumes nB sized tensor vector
     np_tens = pred.cpu().data.numpy()
@@ -128,7 +128,7 @@ def make_color_map(pred):
     m = mpl.cm.ScalarMappable(norm=norm, cmap="viridis_r")
     return m.to_rgba(np_tens)[:, :3]
 
-
+#Henry 產生紅黑點 或綠黃點
 def make_colors(boolean_mask, threshold=.5, surface_color=[1., 0., 0.], background_color=[0., 0., 0.]):
     final_colors = []
     # assert len(boolean_mask.shape) == 1, boolean_mask.shape

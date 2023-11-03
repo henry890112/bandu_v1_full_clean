@@ -254,7 +254,8 @@ class DGCNNCVAESeg(nn.Module):
         self.current_batch_idx += 1
 
         if self.multi_gpu:
-            self.pointcloud_encoder.to(self.gpu_1)
+            # self.pointcloud_encoder.to(self.gpu_1)
+            self.pointcloud_encoder.to(self.gpu_0) #Henry:
 
             self.fc_embedding2z.to(next(self.pointcloud_encoder.parameters()).device)
 
@@ -833,7 +834,9 @@ class DGCNNCVAESeg(nn.Module):
             else:
                 pc = pc_X
 
-            z_params, global_feat = self.prior_predictor(pc.permute(0, 2, 1).to(self.gpu_1),
+            # z_params, global_feat = self.prior_predictor(pc.permute(0, 2, 1).to(self.gpu_1),
+            #                                              ret_global_feat=True)
+            z_params, global_feat = self.prior_predictor(pc.permute(0, 2, 1).to(self.gpu_0),  #Henry    
                                                          ret_global_feat=True)
 
             # z_mu, z_logvar = z_params.split([self.latent_dim, self.latent_dim], dim=-1)

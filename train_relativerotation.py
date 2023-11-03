@@ -1,11 +1,13 @@
 from utils.torch_util import freeze
+#Henry add the pid
+from utils.pid import PIDControl
 
 MAX_TRAIN_SAMPLES_PER_EPOCH = 2000
 MAX_VAL_SAMPLES = 200
 
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument('--device_id', default=1)
+parser.add_argument('--device_id', default=0)   #Henry： change to default 1 to 0
 parser.add_argument('hyper_config', help="Hyperparams config python file.")
 parser.add_argument('ldd_config', help='Loss and diag dict config python file')
 parser.add_argument('train_dset_path', type=str)
@@ -97,6 +99,7 @@ import os
 from data_generation.sim_dataset import PybulletPointcloudDataset
 
 os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 # git_hash = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode(("utf-8")).split("\n")[0]
 
@@ -147,6 +150,8 @@ if args.resume_pkl and args.load_optim:
     pkl = torch.load(args.resume_pkl)
     optimizer.load_state_dict(pkl['opt'])
 
+#Henry: 調整開始的epoch , if resume pk1
+start_epoch = 1
 num_epochs = 100000
 
 # if args.enable_scheduler:
@@ -201,7 +206,7 @@ val_dloader = DataLoader(val_dset, pin_memory=True, batch_size=args.batch_size, 
 
 get_loss_and_diag_dict = misc_util.load_ldd_from_filepath(args.ldd_config).get_loss_and_diag_dict
 
-for epoch in range(num_epochs):
+for epoch in range(start_epoch, num_epochs):
     print(f"ln73 Epoch {epoch}")
 
     if epoch % args.evaluation_freq == 0 and epoch > 0:

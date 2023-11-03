@@ -26,10 +26,40 @@ obj_id = p.loadURDF(args.urdf_path, globalScaling=1)
 
 aabb = p.getAABB(obj_id)
 
+# draw the aabb box in the pybullet GUI
+
+print("aabb")
 print(aabb)
 
 aabbMinVec = aabb[0]
 aabbMaxVec = aabb[1]
+print("aabbMinVec")
+print(aabbMinVec)
+print("aabbMaxVec")
+print(aabbMaxVec)
+# Set the color and line width for the AABB box
+color = [1, 0, 0]  # Red color
+line_width = 2.0
+
+# draw the AABB box
+# 底部
+
+p.addUserDebugLine(aabbMinVec, [aabbMinVec[0], aabbMinVec[1], aabbMaxVec[2]], color, line_width)
+p.addUserDebugLine(aabbMinVec, [aabbMinVec[0], aabbMaxVec[1], aabbMinVec[2]], color, line_width)
+p.addUserDebugLine(aabbMinVec, [aabbMaxVec[0], aabbMinVec[1], aabbMinVec[2]], color, line_width)
+p.addUserDebugLine(aabbMaxVec, [aabbMaxVec[0], aabbMaxVec[1], aabbMinVec[2]], color, line_width)
+p.addUserDebugLine(aabbMaxVec, [aabbMaxVec[0], aabbMinVec[1], aabbMaxVec[2]], color, line_width)
+p.addUserDebugLine(aabbMaxVec, [aabbMinVec[0], aabbMaxVec[1], aabbMaxVec[2]], color, line_width)
+
+p.addUserDebugLine([aabbMaxVec[0], aabbMinVec[1], aabbMaxVec[2]], [aabbMinVec[0], aabbMinVec[1], aabbMaxVec[2]], color, line_width)
+p.addUserDebugLine([aabbMaxVec[0], aabbMinVec[1], aabbMaxVec[2]], [aabbMaxVec[0], aabbMinVec[1], aabbMinVec[2]], color, line_width)
+p.addUserDebugLine([aabbMaxVec[0], aabbMaxVec[1], aabbMinVec[2]], [aabbMaxVec[0], aabbMinVec[1], aabbMinVec[2]], color, line_width)
+
+p.addUserDebugLine([aabbMinVec[0], aabbMaxVec[1], aabbMaxVec[2]], [aabbMinVec[0], aabbMinVec[1], aabbMaxVec[2]], color, line_width)
+p.addUserDebugLine([aabbMinVec[0], aabbMaxVec[1], aabbMaxVec[2]], [aabbMinVec[0], aabbMaxVec[1], aabbMinVec[2]], color, line_width)
+p.addUserDebugLine([aabbMaxVec[0], aabbMaxVec[1], aabbMinVec[2]], [aabbMinVec[0], aabbMaxVec[1], aabbMinVec[2]], color, line_width)
+
+
 
 print("obj height")
 print(aabbMaxVec[-1] - aabbMinVec[-1])

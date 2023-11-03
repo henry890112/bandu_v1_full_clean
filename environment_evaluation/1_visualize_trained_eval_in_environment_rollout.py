@@ -44,6 +44,12 @@ parser.add_argument('--gen_antiparallel_rotation', action='store_true')
 
 args = parser.parse_args()
 
+import os
+import sys
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+print(BASE_DIR)
+sys.path.append(os.path.join(BASE_DIR))
+
 from envs.bandu_noop import BanduNoopEnv
 from utils.misc_util import *
 from utils.train_util import model_creator

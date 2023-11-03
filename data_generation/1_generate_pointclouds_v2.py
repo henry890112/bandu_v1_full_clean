@@ -22,7 +22,7 @@ import numpy as np
 import datetime
 
 
-@concurrent
+# @concurrent
 def generate_and_save_canonical_sample(urdf_path, sample_idx, height_offset, global_scaling, pb_loop=False, simulate=True,
                                        compute_oriented_normals=False, o3d_viz=False, data_dir=None,
                                        object_name=None):
@@ -83,7 +83,8 @@ def generate_and_save_canonical_sample(urdf_path, sample_idx, height_offset, glo
     print(p.getNumBodies())
 
     if pb_loop:
-        pb_util.pb_key_loop('n')
+        time.sleep(1)
+        # pb_util.pb_key_loop('n')
 
     if args.manual_pose:
         # Attract the object above the able before simulating...
@@ -198,7 +199,7 @@ def generate_and_save_canonical_sample(urdf_path, sample_idx, height_offset, glo
 
 
 
-@synchronized
+# @synchronized
 def generate_urdf_name_to_pointcloud_dict(urdf_name_to_pointcloud_dict,
                                           urdf_dir, prefix, num_samples, urdfs, pointcloud_output_dir,
                                           height_offset=.2,
@@ -291,7 +292,6 @@ def generate_urdf_name_to_pointcloud_dict(urdf_name_to_pointcloud_dict,
 
     # return urdf_name_to_pc_dict_path
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('urdf_dir')
@@ -371,6 +371,7 @@ if __name__ == "__main__":
     assert urdfs, "Are you sure your urdf path is correct? If it's relative, check from what dir your script is running"
 
     urdf_name_to_pointcloud_dict = dict()
+
     for urdf_path in urdfs:
         object_name = bandu_util.get_object_names([urdf_path])[0]
         urdf_name_to_pointcloud_dict[object_name] = [None] * args.num_samples

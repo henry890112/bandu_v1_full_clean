@@ -25,6 +25,7 @@ def model_creator(config, train_dataset=None, device_id=0):
             model = config[f"model{i}"]['model_class'](**model_kwargs)
 
             device = torch.device(f"cuda:{device_id}" if use_cuda else "cpu")
+            print("device111111111111111111111111111", device)  #Henry  
             models_container_dict[config[f"model{i}"]["model_name"]] = model.to(device)
             i+=1
         else:

@@ -1,5 +1,8 @@
 import numpy as np
 import pybullet as p
+import cv2
+import matplotlib.pyplot as plt
+import random
 
 from imports.airobot.sensor.camera.camera import Camera
 
@@ -222,6 +225,16 @@ class RGBDCamera(Camera):
             rgb_im, depth_im, seg_im = self.get_images(get_rgb=True,
                                                get_depth=True,
                                                get_seg=True)
+            #Henry : save the rgb and depth images
+            henry_rgb = rgb_im.astype(np.uint8)
+            print(henry_rgb.shape)
+            # use plt to save the image
+            print(obj_id)
+            # give me a random float number between 0 and 1
+            random_float = random.random()  # Generates a random float between 0 and 1
+
+            plt.imsave('/home/docker/bandu_v1_full_clean/urdf_rgb/{}_rgb.png'.format(random_float), henry_rgb)
+            
 
             total_pts = rgb_im.shape[0] * rgb_im.shape[1]
 

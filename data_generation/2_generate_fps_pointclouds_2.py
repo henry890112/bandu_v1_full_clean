@@ -13,6 +13,8 @@ from scipy.spatial.transform.rotation import Rotation as R
 import os
 import open3d
 import time
+from os import getpid
+
 
 # original_data_dir = "/home/richard/improbable/spinningup/out/canonical_pointclouds/bandu_val/test_v2/samples"
 original_data_dir = sys.argv[1]
@@ -60,6 +62,12 @@ def create_aggregate_uv1incam_depth_and_cam_idxs(uv_one_in_cam,
     cam_idx_to_segmented_uv_one_in_cam = [[] for _ in range(len(cameras))]
 
     original_pc_idx_to_cam_idxs = []
+    # Henry: 不同角度所獲得的點雲
+    print("I'm process7777777777777", getpid())
+    print("uv_one_in_cam0000", uv_one_in_cam[0].shape)
+    print("uv_one_in_cam1111", uv_one_in_cam[1].shape)
+    print("uv_one_in_cam2222", uv_one_in_cam[2].shape)
+    print("uv_one_in_cam3333", uv_one_in_cam[3].shape)
     for cam_idx in range(len(uv_one_in_cam)):
         original_pc_idx_to_cam_idxs.append(np.ones(uv_one_in_cam[cam_idx].shape[-1], dtype=np.int32) * cam_idx)
     original_pc_idx_to_cam_idxs = np.concatenate(original_pc_idx_to_cam_idxs, axis=0)
@@ -123,7 +131,7 @@ def create_aggregate_uv1incam_depth_and_cam_idxs(uv_one_in_cam,
     return aggregate_uv1incam_depth_and_cam_idxs
 
 import open3d as o3d
-@concurrent
+# @concurrent
 def uvd_to_segmented_uvd(depths, uv_one_in_cam, row, dic, original_centered_pc):
     """
 
@@ -184,8 +192,8 @@ def uvd_to_segmented_uvd(depths, uv_one_in_cam, row, dic, original_centered_pc):
     """
     End Unit test
     """
-
-    assert aggregate_uv1incam_depth_and_cam_idxs.shape[0] < 10000
+    #Henry 在用ycb dat有註解掉
+    # assert aggregate_uv1incam_depth_and_cam_idxs.shape[0] < 10000
     new_dic['aggregate_uv1incam_depth_and_cam_idxs'] = aggregate_uv1incam_depth_and_cam_idxs.copy()
 
     """
@@ -220,7 +228,7 @@ def uvd_to_segmented_uvd(depths, uv_one_in_cam, row, dic, original_centered_pc):
     torch.save(new_dic, new_samples_dir / row['object_name'] / f"{row['sample_idx']}.pkl")
 
 
-@synchronized
+# @synchronized
 def generate_samples_from_canonical_pointclouds():
     """
     Takes in full pointcloud and processes it
