@@ -87,6 +87,9 @@ total_z_per_sample = 10
 angle_list = []
 
 for round_idx in range(args.single_obj_round):
+    # print the batch shape
+    print("batch shape")
+    print(batch['rotated_pointcloud'].shape)
     print("!!!!!!!!!!!!!!!!!!!!!!round_idx:", round_idx)
 
     if "CVAE" in models_dict['surface_classifier'].__class__.__name__:
@@ -163,11 +166,11 @@ for round_idx in range(args.single_obj_round):
                                                     open3d.geometry.TriangleMesh.create_coordinate_frame(.03, [0, 0, 0])])
                 
                 # #Henry: testtest
-                # open3d.visualization.draw_geometries([vis_util.make_point_cloud_o3d(batch['rotated_pointcloud'][sample_idx][0],
-                #                                                             color=make_colors(torch.sigmoid(predictions[sample_idx][z_idx]))), 
-                #                                     box,
-                #                                     arrow,
-                #                                     open3d.geometry.TriangleMesh.create_coordinate_frame(.03, [0, 0, 0])])
+                open3d.visualization.draw_geometries([vis_util.make_point_cloud_o3d(batch['rotated_pointcloud'][sample_idx][0],
+                                                                            color=make_colors(torch.sigmoid(predictions[sample_idx][z_idx]))), 
+                                                    box,
+                                                    arrow,
+                                                    open3d.geometry.TriangleMesh.create_coordinate_frame(.03, [0, 0, 0])])
                 
                 # # open3d.visualization.draw_geometries([vis_util.make_point_cloud_o3d(batch['rotated_pointcloud'][sample_idx][0] + torch.tensor([0, 0, .5]),
                 # #                                                                     # color=make_colors(batch['bottom_thresholded_boolean'][sample_idx][0][:, 0],

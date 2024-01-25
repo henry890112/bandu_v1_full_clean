@@ -108,7 +108,7 @@ class DGCNNCVAESeg(nn.Module):
 
         self.posterior_type = posterior_type
         assert posterior_type in ["normal", "gmm", "realnvp", "maf"]
-
+        #Henry: we use this posterior type for the prior predictor
         if posterior_type == "normal" or posterior_type == "realnvp" or posterior_type == "maf":
             self.fc_embedding2z = nn.Linear(embedding_dim, 2*latent_dim)
         else:
@@ -169,6 +169,8 @@ class DGCNNCVAESeg(nn.Module):
                 self.vamp_weights = nn.Parameter(torch.zeros(vamp_pseudo_components))
             else:
                 self.vamp_weights = torch.ones(vamp_pseudo_components)
+        #Henry ->  
+        # prior_type="mog_predict_unit_logvar", prior_predictor_type="cls",
         elif prior_type == "vamp_weighted_predict" or "mog_predict" in prior_type:
             assert prior_predictor_type in ["segncls", "clsncls", "cls", "cls_small"]
             self.prior_predictor_type = prior_predictor_type
@@ -265,6 +267,7 @@ class DGCNNCVAESeg(nn.Module):
                 self.prior_predictor.to(self.gpu_0)
 
         # this is the input X
+        #Henry 2048 points
         nB, num_objects, num_points, _ = batch['rotated_pointcloud'].shape
 
         # -> nB, num_points, 3
@@ -323,6 +326,7 @@ class DGCNNCVAESeg(nn.Module):
 
         if self.posterior_type == "normal":
             # -> nB, latent_dim and nB, latent_dim
+            #Henry 經過embedding後的latent_dim = 2* 24, 將latent_dim分成兩半, 一半給mu, 一半給logvar
             encoder_z_mu, encoder_z_logvar = self.fc_embedding2z(embedding).split([self.latent_dim, self.latent_dim], dim=-1)
 
             encoder_z_logvar = torch.clamp(encoder_z_logvar, self.logvar_lower_bound, self.logvar_upper_bound)
@@ -371,11 +375,10 @@ class DGCNNCVAESeg(nn.Module):
         #                                   scale=torch.exp(encoder_z_logvar.reshape(nB, self.vamp_pseudo_components, self.latent_dim))**(1/2)), 1)
         #     # comp = D.Normal(loc=gaussian_means, scale=torch.relu(gaussian_logstddevs) + 1E-11)
         #     gmm = D.MixtureSameFamily(mix, comp)
-
+        #Henry decoder start
         """
         Decoder start
         """
-
         # nB, num_points, latent_dim
         z_expanded = encoder_z_sample.unsqueeze(1).expand(-1, num_points, -1)
 
@@ -397,11 +400,15 @@ class DGCNNCVAESeg(nn.Module):
                 normals_X = (normals_X - batch['rotated_normals_mean'])/ \
                             (torch.sqrt(batch['rotated_normals_var']) + 1E-6)
             pc = torch.cat((pc_X, normals_X), dim=-1)
-
+        #Henry 跑這裡
         pc = pc.to(next(self.parameters()).device)
         # Concatenate the z to every point
         # -> nB*nO, num_points, 3 concat nB*nO, num_points, 4 -> nB*nO, 7, num_points
         pc = torch.cat((pc.float(), z_expanded), dim=-1).permute(0, 2, 1)
+        '''
+        如果 pc 的形状是 [batch_size, num_points, 3]，即每个数据样本是一个包含 num_points 个点，
+        每个点有三维坐标的张量，那么经过上述代码后，pc 的形状将变为 [batch_size, num_points, 3 + latent_dim]。
+        '''
         # the decoder will concatenate encoder_z_sample to each point
 
         # -> nB*nO, num_points, 1 -> nB*nO, num_points
@@ -417,6 +424,7 @@ class DGCNNCVAESeg(nn.Module):
 
             # -> nB, num_points, output_dim
             decoder_logits = decoder_logits.squeeze(-1).transpose(-1, -2)
+        #Henry 跑這裡
         else:
             # nB, num_points
             decoder_logits = self.pointcloud_decoder(pc).squeeze(1)
@@ -434,6 +442,7 @@ class DGCNNCVAESeg(nn.Module):
                 encoder_flow_log_prob=flow_log_prob,
                 encoder_z_sample=encoder_z_sample
             )
+        #Henry 跑這裡
         else:
             # out['encoder'] = [encoder_z_mu, encoder_z_logvar, encoder_z_sample]
             out['encoder'] = dict(encoder_z_mu=encoder_z_mu,
@@ -473,6 +482,7 @@ class DGCNNCVAESeg(nn.Module):
             rot_mats = transform_util.torch_quat2mat(q)
 
             out['decoder'] = [rot_mats]
+        #Henry 跑這裡
         else:
             out['decoder'] = [decoder_logits]
 
@@ -543,6 +553,7 @@ class DGCNNCVAESeg(nn.Module):
         elif "lattice_gmm" in self.prior_type:
             out['prior'] = self.lgmm_mu.to(next(self.pointcloud_encoder.parameters()).device), \
                            self.lgmm_logvars.to(next(self.pointcloud_encoder.parameters()).device)
+        #Henry 跑這裡
         elif "mog_predict" in self.prior_type:
             # take in pointcloud
             # predict fixed sized embedding

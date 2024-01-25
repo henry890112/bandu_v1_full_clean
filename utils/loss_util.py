@@ -402,16 +402,16 @@ class CVAELoss(nn.Module):
             extra_log_dict['current_capacity'] = cc
 
         #Henry use PID to change the total loss
-        print(posterior_kld_loss_unreduced)
-        print(posterior_kld_loss_unreduced.item())
-        kl_loss = torch.clamp(posterior_kld_loss_unreduced, self.kld_lower, self.kld_upper).mean().to(reconstruction.device)
-        print(kl_loss)
-        kld_weight = PIDControl.pid(20, kl_loss.item(), Kp=0.01, Ki=(-0.0001), Kd=0.0)
-        total_loss = reconstruction + kld_weight* kl_loss
+        # print(posterior_kld_loss_unreduced)
+        # print(posterior_kld_loss_unreduced.item())
+        # kl_loss = torch.clamp(posterior_kld_loss_unreduced, self.kld_lower, self.kld_upper).mean().to(reconstruction.device)
+        # print(kl_loss)
+        # kld_weight = PIDControl.pid(20, kl_loss.item(), Kp=0.01, Ki=(-0.0001), Kd=0.0)
+        # total_loss = reconstruction + kld_weight* kl_loss
         #Henry end
 
-        # total_loss = reconstruction + kld_weight * \
-        #              torch.clamp(posterior_kld_loss_unreduced, self.kld_lower, self.kld_upper).mean().to(reconstruction.device)
+        total_loss = reconstruction + kld_weight * \
+                     torch.clamp(posterior_kld_loss_unreduced, self.kld_lower, self.kld_upper).mean().to(reconstruction.device)
 
         if "encoder_trans" in self.recon_loss_type:
             # encourage encoder trans to be orthogonal
