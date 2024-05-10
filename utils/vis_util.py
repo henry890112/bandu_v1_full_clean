@@ -77,7 +77,7 @@ from utils import transform_util
 def create_arrow(vec, color, vis=None, vec_len=None, scale=.06, radius=.12, position=(0,0,0),
                  object_com=None):
     """
-    Creates an error, where the arrow size is based on the vector magnitude.
+    Creates an arrow, where the arrow size is based on the vector magnitude.
     :param vec:
     :param color:
     :param vis:
@@ -110,7 +110,7 @@ def create_arrow(vec, color, vis=None, vec_len=None, scale=.06, radius=.12, posi
     # print("ln554 create_arrow")
     # print(vec)
     rot_mat = transform_util.get_rotation_matrix_between_vecs(vec, [0, 0, 1])
-    print(rot_mat)
+    # print(rot_mat)
     mesh_arrow.rotate(rot_mat, center=np.array([0,0,0]))
 
     H = np.eye(4)
@@ -136,6 +136,21 @@ def make_colors(boolean_mask, threshold=.5, surface_color=[1., 0., 0.], backgrou
     for point in boolean_mask:
         if point < threshold:
             # print("ln77 Found hit")
+            final_colors.append(surface_color)
+            found_surface_pts += 1
+        else:
+            final_colors.append(background_color)
+    print(f"ln236 found surface points: {found_surface_pts}")
+    return np.array(final_colors)
+
+# use topk to make the top k points red
+def make_colors_topk(boolean_mask, k, surface_color=[1., 0., 0.], background_color=[0., 0., 0.]):
+    final_colors = []
+    # assert len(boolean_mask.shape) == 1, boolean_mask.shape
+    found_surface_pts = 0
+    topk = boolean_mask.topk(k, largest=False)
+    for i in range(len(boolean_mask)):
+        if i in topk.indices:
             final_colors.append(surface_color)
             found_surface_pts += 1
         else:

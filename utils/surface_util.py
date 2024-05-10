@@ -6,14 +6,16 @@ from utils import transform_util, vis_util
 import open3d
 from scipy.spatial.transform import Rotation as R
 import copy
-
+from sklearn.cluster import DBSCAN
+import matplotlib.pyplot as plt
 
 def get_relative_rotation_from_binary_logits(rotated_pointcloud,
                                              binary_logits,
                                              sigmoid_threshold=.5,
                                              dir="surface_to_upright",
-                                             min_num_points=3,
-                                             topk_k=30):
+                                             min_num_points=3, # 因為要三個點才有平面
+                                             topk_k=30,
+                                             use_cluster=False):
     """
 
     :param rotated_pointcloud: num_points x 3
@@ -37,6 +39,39 @@ def get_relative_rotation_from_binary_logits(rotated_pointcloud,
 
     surface_pcd = open3d.geometry.PointCloud()
     surface_pcd.points = open3d.utility.Vector3dVector(surface_points.cpu().data.numpy())
+    surface_pcd.paint_uniform_color([1, 0, 0])
+    # print the shape of surface_points
+    # surface_points.shape:  torch.Size([150, 3])
+    print("surface_points.shape: ", surface_points.shape)
+    surface_points_np = surface_points.numpy()
+
+    if use_cluster:
+        # 使用 DBSCAN 算法進行分群
+        # eps 是鄰域半徑，min_samples 是形成密集區所需的最小樣本數
+        # 使用 DBSCAN 分群
+        dbscan = DBSCAN(eps=0.05, min_samples=15)  # 可能需要根據數據調整 eps 和 min_samples
+        labels = dbscan.fit_predict(surface_points_np)
+
+        # 找出點雲數量最多的群組
+        unique_labels, counts = np.unique(labels, return_counts=True)
+        # 忽略雜點（label=-1）
+        counts[unique_labels == -1] = 0
+        max_cluster_label = unique_labels[np.argmax(counts)]
+
+        # 篩選出屬於該群組的點
+        max_cluster_points = surface_points_np[labels == max_cluster_label]
+
+        # use open3d 繪製max_cluster_points和surface_points
+        max_cluster_points_pcd = open3d.geometry.PointCloud()
+        max_cluster_points_pcd.points = open3d.utility.Vector3dVector(max_cluster_points)
+        max_cluster_points_pcd.paint_uniform_color([0, 1, 0])
+        surface_points = max_cluster_points
+        surface_pcd = max_cluster_points_pcd
+
+        #Henry 加上cluster的點, 可用可是化來調整參數
+        # open3d.visualization.draw_geometries([surface_pcd, max_cluster_points_pcd])
+    else:
+        max_cluster_points_pcd = surface_pcd
 
     assert surface_points.shape[0] > min_num_points
     try:
@@ -51,8 +86,8 @@ def get_relative_rotation_from_binary_logits(rotated_pointcloud,
         平面包含的点数大于等于 min_num_points 和点云中的点数中的较小值。
         RANSAC算法最多进行100000次迭代。
         '''
-        #Henry 有改參數
-        plane_model, plane_idxs = surface_pcd.segment_plane(.0005, np.min([min_num_points, surface_points.shape[0]]), 100000)
+        #Henry 有改參數 .002改成.0005
+        plane_model, plane_idxs = surface_pcd.segment_plane(.05, np.min([min_num_points, surface_points.shape[0]]), 100000)
 
         plane_normal = np.array(plane_model)[:3]
         a, b, c, d = plane_model
@@ -62,12 +97,12 @@ def get_relative_rotation_from_binary_logits(rotated_pointcloud,
         oriented_normal = np.sign(-d) * plane_normal
 
         if dir == "surface_to_upright":
-            return transform_util.get_rotation_matrix_between_vecs([0, 0, -1], oriented_normal), plane_model
+            return transform_util.get_rotation_matrix_between_vecs([0, 0, -1], oriented_normal), plane_model, max_cluster_points_pcd
         else:
-            return transform_util.get_rotation_matrix_between_vecs(oriented_normal, [0, 0, -1]), plane_model
+            return transform_util.get_rotation_matrix_between_vecs(oriented_normal, [0, 0, -1]), plane_model, max_cluster_points_pcd
     except:
         print("Unable to find any points")
-        return None, None
+        return None, None, None
 
 
 def get_relative_rotation_from_obb(rotated_pointcloud, vis_o3d=False, gen_antiparallel_rotation=False,
@@ -76,7 +111,6 @@ def get_relative_rotation_from_obb(rotated_pointcloud, vis_o3d=False, gen_antipa
     obb = obb.create_from_points(open3d.utility.Vector3dVector(rotated_pointcloud.cpu().data.numpy()))
 
     # make sure obb.R is orthogonal
-
     new_obb = open3d.geometry.OrientedBoundingBox(obb)
     new_obb.color = np.array([1., 0., 0.])
 

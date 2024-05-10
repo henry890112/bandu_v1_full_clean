@@ -3,3 +3,4 @@ out/
 *.pyc
 wandb/
 urdf_rgb/
+Pointnet2_PyTorch/

@@ -333,10 +333,10 @@ class DGCNNCVAESeg(nn.Module):
 
             encoder_z_logvar = torch.clamp(encoder_z_logvar, self.logvar_lower_bound, self.logvar_upper_bound)
 
-            print("ln280 encoder z mu _ max component")
-            print(encoder_z_mu)
-            print("ln280 encoder z logvar _ max component")
-            print(encoder_z_logvar)
+            # print("ln280 encoder z mu _ max component")
+            # print(encoder_z_mu)
+            # print("ln280 encoder z logvar _ max component")
+            # print(encoder_z_logvar)
 
             # -> nB, latent_dim
             encoder_z_sample = self.reparameterize(encoder_z_mu, encoder_z_logvar)
