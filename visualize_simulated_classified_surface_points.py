@@ -235,17 +235,31 @@ while(mean_angle > 15):
                                                         position=centroid,
                                                         object_com=np.zeros(3))
                     if args.vis:
+                        # arrow = vis_util.create_arrow(plane_model[:3], [0., 0., .5], scale=.1,
+                        #                                 position=box_centroid,
+                        #                                 # object_com=sample_pkl['position'])
+                        #                                 object_com=np.zeros(3))  # because the object has been centered
+                        open3d.visualization.draw_geometries([vis_util.make_point_cloud_o3d(batch['rotated_pointcloud'][sample_idx][0],
+                                                                                        color=[0, 0, 0])])
+                        
+                        open3d.visualization.draw_geometries([vis_util.make_point_cloud_o3d(batch['rotated_pointcloud'][sample_idx][0],
+                                                                                        color=[0, 0, 0]),
+                                                        arrow])
+
                         open3d.visualization.draw_geometries([vis_util.make_point_cloud_o3d(batch['rotated_pointcloud'][sample_idx][0],
                                                                                             color=make_colors(torch.sigmoid(predictions[sample_idx][z_idx]))),
                                                             pcd_projection, 
                                                             open3d.geometry.TriangleMesh.create_coordinate_frame(.03, [0, 0, 0])])
-                        
+
+                        open3d.visualization.draw_geometries([pcd_projection, 
+                                                                arrow])
+                         
                         open3d.visualization.draw_geometries([pcd_projection, 
                                                                 arrow_toward,
                                                                 arrow])
                         
                         open3d.visualization.draw_geometries([vis_util.make_point_cloud_o3d(batch['rotated_pointcloud'][sample_idx][0],
-                                                                                            color=make_colors(torch.sigmoid(predictions[sample_idx][z_idx]))),
+                                                                                            color=[0, 0, 0]),
                                                                 arrow_toward,
                                                                 arrow])
 

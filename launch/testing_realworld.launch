@@ -1,0 +1,13 @@
+<launch>
+    <!-- 定義參數 -->
+    <arg name="config_file" default="$(find bandu_v1_full_clean)/configs/models/8-19-21-dgcnn_mog_predict_forward_kld.py" />
+    <arg name="checkpoint_file" default="$(find bandu_v1_full_clean)/wandb/run-20230831_005124-36jnk0yq/files/electric-meadow-23_checkpoint1000" />
+    <arg name="stats_json" default="$(find bandu_v1_full_clean)/out/datasets/bandu_train/jan18_train/voxelized_samples/rr_pn_stats.json" />
+
+    <!-- 執行Python腳本 -->
+    <node name="test_single_real_sample" pkg="bandu_v1_full_clean" type="rosnode.py" output="screen">
+        <param name="hyper_config" value="$(arg config_file)" />
+        <param name="sc_checkpoint" value="$(arg checkpoint_file)" />
+        <param name="stats_json" value="$(arg stats_json)" />
+    </node>
+</launch>
