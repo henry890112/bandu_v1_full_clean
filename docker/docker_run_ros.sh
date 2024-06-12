@@ -57,5 +57,5 @@ docker run \
     --privileged \
     --security-opt seccomp=unconfined \
     $DOCKER_OPTS \
-    iscilab/tm5-pybullet:cuda-20-04 \
+    richardrl/bandu_v1_ros:cuda-20-04 \
     $BASH_OPTION
